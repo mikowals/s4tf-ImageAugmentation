@@ -1,6 +1,6 @@
 import TensorFlow
 
-pbulic func shuffle<T, R>(tuple: (Tensor<T>, Tensor<R>)) -> (Tensor<T>, Tensor<R>) {
+public func shuffle<T, R>(tuple: (Tensor<T>, Tensor<R>)) -> (Tensor<T>, Tensor<R>) {
     let batchSize = tuple.0.shape[0]
     let shuffledIndices = Raw.randomShuffle(value: Tensor<Int32>(rangeFrom: 0, to: Int32(batchSize), stride: 1))
     let labels = Raw.gatherV2(params: tuple.0, indices: shuffledIndices, axis: Tensor<Int32>(0))
