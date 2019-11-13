@@ -96,12 +96,19 @@ func proportion(h: Int32, w: Int32, area: Int32) -> Float {
     return Float(h * w) / Float(area)
 }
 
-public func ricap(_ nchwBatch: (Tensor<Float>, Tensor<Float>)) -> (Tensor<Float>, Tensor<Float>) {
-    let batch = (nchwBatch.0, nchwBatch.1.transposed(withPermutations: [0, 2, 3, 1]))
-    var (labels1, images1) = batch
-    var (labels2, images2) = shuffle(tuple: batch)
-    var (labels3, images3) = shuffle(tuple: batch)
-    var (labels4, images4) = shuffle(tuple: batch)
+public func ricap(_ batch: (Tensor<Float>, Tensor<Float>),
+                  dataFormat: Raw.DataFormat = .nhwc) -> (Tensor<Float>, Tensor<Float>) {
+    var images1: Tensor<Float>
+    if dataFormat == .nchw {
+        images1 = batch.1.transposed(withPermutations: [0, 2, 3, 1])
+    } else {
+        images1 = batch.1
+    }
+    
+    var labels1 = batch.0
+    var (labels2, images2) = shuffle(tuple: (labels1, images1))
+    var (labels3, images3) = shuffle(tuple: (labels1, images1))
+    var (labels4, images4) = shuffle(tuple: (labels1, images1))
     images1 = randomHorizontalFlip(images: images1, horizontalAxis: 2)
     images2 = randomHorizontalFlip(images: images2, horizontalAxis: 2)
     images3 = randomHorizontalFlip(images: images3, horizontalAxis: 2)
@@ -128,7 +135,11 @@ public func ricap(_ nchwBatch: (Tensor<Float>, Tensor<Float>)) -> (Tensor<Float>
                     labels2 * proportion(h: imageSize - h, w: w, area: area) +
                     labels3 * proportion(h: h, w: imageSize - w, area: area) +
                     labels4 * proportion(h: imageSize - h, w: imageSize - w, area: area)
-    return (newLabels, leftImages.concatenated(with: rightImages, alongAxis: 2).transposed(withPermutations: [0, 3, 1, 2]))
+    let result = (newLabels, leftImages.concatenated(with: rightImages, alongAxis: 2))
+    if dataFormat == .nhwc{
+        return result
+    }
+    return (result.0, result.1.transposed(withPermutations: [0, 3, 1, 2]))
 }
 
 public func jitter<Scalar: TensorFlowFloatingPoint>(_ nchwInput: Tensor<Scalar>) -> Tensor<Scalar>{
