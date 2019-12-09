@@ -100,7 +100,7 @@ public func ricap(_ batch: (Tensor<Float>, Tensor<Float>),
                   dataFormat: _Raw.DataFormat = .nhwc) -> (Tensor<Float>, Tensor<Float>) {
     var images1: Tensor<Float>
     if dataFormat == .nchw {
-        images1 = batch.1.transposed(withPermutations: [0, 2, 3, 1])
+        images1 = batch.1.transposed(permutation: [0, 2, 3, 1])
     } else {
         images1 = batch.1
     }
@@ -139,11 +139,11 @@ public func ricap(_ batch: (Tensor<Float>, Tensor<Float>),
     if dataFormat == .nhwc{
         return result
     }
-    return (result.0, result.1.transposed(withPermutations: [0, 3, 1, 2]))
+    return (result.0, result.1.transposed(permutation: [0, 3, 1, 2]))
 }
 
 public func jitter<Scalar: TensorFlowFloatingPoint>(_ nchwInput: Tensor<Scalar>) -> Tensor<Scalar>{
-    let input = nchwInput.transposed(withPermutations: [0,2,3,1])
+    let input = nchwInput.transposed(permutation: [0,2,3,1])
     let padSize = Int32(4)
     let shape = input.shape
     let batchSize = shape[0]
@@ -162,6 +162,6 @@ public func jitter<Scalar: TensorFlowFloatingPoint>(_ nchwInput: Tensor<Scalar>)
             normalized: false,
             uniformNoise: false,
             noise: "zero"
-        ).transposed(withPermutations: [0, 3, 1, 2])
+        ).transposed(permutation: [0, 3, 1, 2])
    )
 }
