@@ -2,9 +2,9 @@ import TensorFlow
 
 public func shuffle<T, R>(tuple: (Tensor<T>, Tensor<R>)) -> (Tensor<T>, Tensor<R>) {
     let batchSize = tuple.0.shape[0]
-    let shuffledIndices = Raw.randomShuffle(value: Tensor<Int32>(rangeFrom: 0, to: Int32(batchSize), stride: 1))
-    let labels = Raw.gatherV2(params: tuple.0, indices: shuffledIndices, axis: Tensor<Int32>(0))
-    let images = Raw.gatherV2(params: tuple.1, indices: shuffledIndices, axis: Tensor<Int32>(0))
+    let shuffledIndices = _Raw.randomShuffle(value: Tensor<Int32>(rangeFrom: 0, to: Int32(batchSize), stride: 1))
+    let labels = _Raw.gatherV2(params: tuple.0, indices: shuffledIndices, axis: Tensor<Int32>(0))
+    let images = _Raw.gatherV2(params: tuple.1, indices: shuffledIndices, axis: Tensor<Int32>(0))
     return (labels, images)
 }
 
@@ -12,7 +12,7 @@ public func randomHorizontalFlip<Scalar: TensorFlowFloatingPoint>(images: Tensor
                                                            horizontalAxis: Int
     ) -> Tensor<Scalar> {
     if Float.random(in: 0 ..< 1) > 0.5 {
-        return Raw.reverseV2(images, axis: Tensor<Int32>([Int32(horizontalAxis)]))
+        return _Raw.reverseV2(images, axis: Tensor<Int32>([Int32(horizontalAxis)]))
     }
     return images
 }
@@ -80,7 +80,7 @@ func createGlimpses(images: [Tensor<Float>], offsets: [Tensor<Float>], sizes: [T
     var ret: [Tensor<Float>] = []
     for ii in 0..<images.count {
         ret.append(Tensor<Float>(
-            Raw.extractGlimpse(
+            _Raw.extractGlimpse(
                 Tensor<Float>(images[ii]),
                 size: sizes[ii],
                 offsets: offsets[ii],
@@ -97,7 +97,7 @@ func proportion(h: Int32, w: Int32, area: Int32) -> Float {
 }
 
 public func ricap(_ batch: (Tensor<Float>, Tensor<Float>),
-                  dataFormat: Raw.DataFormat = .nhwc) -> (Tensor<Float>, Tensor<Float>) {
+                  dataFormat: _Raw.DataFormat = .nhwc) -> (Tensor<Float>, Tensor<Float>) {
     var images1: Tensor<Float>
     if dataFormat == .nchw {
         images1 = batch.1.transposed(withPermutations: [0, 2, 3, 1])
@@ -145,15 +145,16 @@ public func ricap(_ batch: (Tensor<Float>, Tensor<Float>),
 public func jitter<Scalar: TensorFlowFloatingPoint>(_ nchwInput: Tensor<Scalar>) -> Tensor<Scalar>{
     let input = nchwInput.transposed(withPermutations: [0,2,3,1])
     let padSize = Int32(4)
-    let batchSize = input.shape[0]
-    let center = Int32(input.shape[2]) / 2
+    let shape = input.shape
+    let batchSize = shape[0]
+    let center = Int32(shape[2]) / 2
     var scalars: [Float] = []
     for _ in 0..<batchSize * 2 {
         scalars.append(Float(Int32.random(in: (center - padSize) ... (center + padSize) )))
     }
     let offsets = Tensor<Float>(shape: [batchSize,2], scalars: scalars)
     return Tensor<Scalar>(
-        Raw.extractGlimpse(
+        _Raw.extractGlimpse(
             Tensor<Float>(input),
             size: input.shapeTensor[1...2],
             offsets: offsets,
