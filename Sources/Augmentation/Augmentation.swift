@@ -144,18 +144,23 @@ public func ricap(_ batch: (Tensor<Float>, Tensor<Float>),
 
 public func jitter<Scalar: TensorFlowFloatingPoint>(_ nchwInput: Tensor<Scalar>) -> Tensor<Scalar>{
     let input = nchwInput.transposed(permutation: [0,2,3,1])
-    let padSize = Int32(4)
-    let shape = input.shape
+    let padSize = Int(4)
+    let paddedInput = input.padded(forSizes: [(before: 0, after: 0),
+                                              (before: padSize, after: padSize),
+                                              (before: padSize, after: padSize),
+                                              (before: 0, after: 0)],
+                                    mode: .reflect)
+    let shape = paddedInput.shape
     let batchSize = shape[0]
     let center = Int32(shape[2]) / 2
     var scalars: [Float] = []
     for _ in 0..<batchSize * 2 {
-        scalars.append(Float(Int32.random(in: (center - padSize) ... (center + padSize) )))
+        scalars.append(Float(Int32.random(in: (center - Int32(padSize)) ... (center + Int32(padSize)) )))
     }
     let offsets = Tensor<Float>(shape: [batchSize,2], scalars: scalars)
     return Tensor<Scalar>(
         _Raw.extractGlimpse(
-            Tensor<Float>(input),
+            Tensor<Float>(paddedInput),
             size: input.shapeTensor[1...2],
             offsets: offsets,
             centered: false,
