@@ -155,7 +155,7 @@ public func jitter<Scalar: TensorFlowFloatingPoint>(_ nchwInput: Tensor<Scalar>)
     let center = Int32(shape[2]) / 2
     var scalars: [Float] = []
     for _ in 0..<batchSize * 2 {
-        scalars.append(Float(Int32.random(in: (center - Int32(padSize)) ... (center + Int32(padSize)) )))
+        scalars.append(Float(Int32.random(in: (center - Int32(padSize)) ... (center + Int32(padSize)))))
     }
     let offsets = Tensor<Float>(shape: [batchSize,2], scalars: scalars)
     return Tensor<Scalar>(
