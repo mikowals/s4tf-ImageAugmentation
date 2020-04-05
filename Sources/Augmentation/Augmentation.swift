@@ -31,7 +31,7 @@ public func makeBatches<T, U>(_ batchSize: Int, _ data: (Tensor<T>, Tensor<U>)) 
   return output
 }
 
-let betaDistribution = BetaDistribution(alpha: 1.0, beta: 1.0)
+let betaDistribution = BetaDistribution(alpha: 0.2, beta: 0.2)
 var generator = ThreefryRandomNumberGenerator(seed: [250])
 
 public func mixup(_ batch: (Tensor<Float>, Tensor<Float>)) -> (Tensor<Float>, Tensor<Float>) {
