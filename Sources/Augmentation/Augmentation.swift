@@ -35,11 +35,11 @@ let betaDistribution = BetaDistribution(alpha: 0.2, beta: 0.2)
 var generator = ThreefryRandomNumberGenerator(seed: [250])
 
 public func mixup(_ batch: (Tensor<Float>, Tensor<Float>)) -> (Tensor<Float>, Tensor<Float>) {
-    let (labels1, images1) = batch
+    var (labels1, images1) = batch
     var (labels2, images2) = shuffle(tuple: batch)
     let batchSize = labels1.shape[0]
     
-    images2 = randomHorizontalFlip(images: images2, horizontalAxis: 3)
+    images2 = randomHorizontalFlip(images: images2, horizontalAxis: 2)
     //create mix ratios and apply them to two arrays
     var scalars: [Float] = []
     for _ in 0 ..< batchSize {
