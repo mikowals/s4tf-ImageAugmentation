@@ -37,9 +37,10 @@ var generator = ThreefryRandomNumberGenerator(seed: [250])
 public func mixup(_ batch: (Tensor<Float>, Tensor<Float>)) -> (Tensor<Float>, Tensor<Float>) {
     var (labels1, images1) = batch
     var (labels2, images2) = shuffle(tuple: batch)
+    images1 = randomHorizontalFlip(images: jitter(images1), horizontalAxis: 2)
+    images2 = randomHorizontalFlip(images: jitter(images2), horizontalAxis: 2)
     let batchSize = labels1.shape[0]
-    
-    images2 = randomHorizontalFlip(images: images2, horizontalAxis: 2)
+
     //create mix ratios and apply them to two arrays
     var scalars: [Float] = []
     for _ in 0 ..< batchSize {
@@ -142,8 +143,7 @@ public func ricap(_ batch: (Tensor<Float>, Tensor<Float>),
     return (result.0, result.1.transposed(permutation: [0, 3, 1, 2]))
 }
 
-public func jitter<Scalar: TensorFlowFloatingPoint>(_ nchwInput: Tensor<Scalar>) -> Tensor<Scalar>{
-    let input = nchwInput.transposed(permutation: [0,2,3,1])
+public func jitter<Scalar: TensorFlowFloatingPoint>(_ input: Tensor<Scalar>) -> Tensor<Scalar>{
     let padSize = Int(4)
     let paddedInput = input.padded(forSizes: [(before: 0, after: 0),
                                               (before: padSize, after: padSize),
@@ -167,6 +167,6 @@ public func jitter<Scalar: TensorFlowFloatingPoint>(_ nchwInput: Tensor<Scalar>)
             normalized: false,
             uniformNoise: false,
             noise: "zero"
-        ).transposed(permutation: [0, 3, 1, 2])
+        )
    )
 }
